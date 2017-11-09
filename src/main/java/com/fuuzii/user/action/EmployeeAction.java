@@ -7,22 +7,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * @author yinlei
- * @since 2017/11/9 15:03
+ * @since 2017/11/9 17:41
  */
 @Controller
-@RequestMapping("/user")
-public class UserAction {
-
+@RequestMapping("/employee")
+public class EmployeeAction {
     @Autowired
     private UserService userServiceImpl;
 
     @RequestMapping("/login")
     public String login() {
         return "user/login";
-    }
-
-    @RequestMapping("/list")
-    public String list() {
-        return "user/list";
     }
 }
