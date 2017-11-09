@@ -54,6 +54,7 @@
         </dependency>
 
         <!-- 这个配置超多，和spring boot的初衷是不是不符啊 -->
+        <!-- https://github.com/alibaba/druid/tree/master/druid-spring-boot-starter -->
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid-spring-boot-starter</artifactId>
