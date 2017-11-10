@@ -1,6 +1,7 @@
 package com.fuuzii.security;
 
 import com.vteba.cache.redis.SpringSecurityUserCache;
+import com.vteba.security.filter.DefaultUserAuthenticationFilter;
 import com.vteba.security.filter.logout.SecurityContextCacheLogoutHandler;
 import com.vteba.security.filter.logout.UserLogoutFilter;
 import com.vteba.security.interceptor.FilterSecurityInterceptorImpl;
@@ -61,7 +62,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        super.configure(http);
         http.authorizeRequests()
                 .antMatchers("/*.jpg").permitAll()
                 .antMatchers("/*.png").permitAll()
@@ -86,8 +86,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .formLogin()
                 .loginPage("/employee/login")
-                .successHandler(loginSuccessHandler())
-                .failureHandler(loginFailureHandler())
+//                .successHandler(loginSuccessHandler())
+//                .failureHandler(loginFailureHandler())
                 .failureForwardUrl("/employee/login")
                 .and()
                 .logout()
@@ -100,6 +100,25 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userServiceImpl)
             .passwordEncoder(passwordEncoder());
+    }
+
+    /**
+     * 用户登录认证过滤器。
+     *
+     * @return 登录过滤器
+     */
+    @Bean
+    public DefaultUserAuthenticationFilter userAuthenticationFilter(AuthenticationManager authenticationManager,
+                                                                    AuthenticationSuccessHandler successHandler,
+                                                                    AuthenticationFailureHandler failureHandler,
+                                                                    SessionAuthenticationStrategy sessionAuthenticationStrategy) {
+        DefaultUserAuthenticationFilter authenticationFilter = new DefaultUserAuthenticationFilter();
+        authenticationFilter.setAuthenticationManager(authenticationManager);
+        authenticationFilter.setAuthenticationSuccessHandler(successHandler);
+        authenticationFilter.setAuthenticationFailureHandler(failureHandler);
+        authenticationFilter.setSessionAuthenticationStrategy(sessionAuthenticationStrategy);
+        authenticationFilter.setCaseSensitive(true);
+        return authenticationFilter;
     }
 
     /**
@@ -225,12 +244,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     /**
-     * 认证提供者管理器，这个 Bean 的Id被写死了
+     * 认证提供者管理器，[这个 Bean 的Id被Spring写死了("org.springframework.security.authenticationManager")] 已经改正了。
      *
      * @param authenticationProvider dao 认证提供者
      * @return 认证提供者管理器
      */
-    @Bean("org.springframework.security.authenticationManager")
+    @Bean
     @Autowired
     public ProviderManager providerManager(AuthenticationProvider authenticationProvider) {
         List<AuthenticationProvider> list = new ArrayList<>(1);
