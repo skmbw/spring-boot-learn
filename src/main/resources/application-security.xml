@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd         http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.2.xsd"
+       default-autowire="byName">
+	
+	<security:http pattern="/**/*.jpg" security="none"/>
+	<security:http pattern="/**/*.jpeg" security="none"/>
+	<security:http pattern="/**/*.bmp" security="none"/>
+	<security:http pattern="/**/*.png" security="none"/>
+	<security:http pattern="/**/*.gif" security="none"/>
+	<security:http pattern="/**/*.ico" security="none"/>
+	<security:http pattern="/**/*.css" security="none"/>
+	<security:http pattern="/**/*.js" security="none"/>
+	<security:http pattern="/**/*.map" security="none"/>
+	<security:http pattern="/**/*.svg" security="none"/>
+	<security:http pattern="/**/*.ttf" security="none"/>
+	<security:http pattern="/**/*.otf" security="none"/>
+	<security:http pattern="/**/*.eot" security="none"/>
+	<security:http pattern="/**/*.woff" security="none"/>
+	<security:http pattern="/**/*.woff2" security="none"/>
+	<security:http pattern="/index.jsp" security="none"/>
+	<security:http pattern="/**/employee/login" security="none"/>
+	<security:http pattern="/**/common/random" security="none"/>
+	<security:http pattern="/**/common/accessDenied" security="none"/>
+	<security:http pattern="/**/employee/clean" security="none"/>
+	<security:http pattern="/**/news/detail/*" security="none"/>
+
+	<security:http auto-config='false' entry-point-ref="loginUrlAuthenticationEntryPoint">
+		<security:access-denied-handler error-page="/common/accessDenied"/>
+		<security:session-management invalid-session-url="/employee/login" session-fixation-protection="migrateSession">
+			<security:concurrency-control max-sessions="1" error-if-maximum-exceeded="false" />
+		</security:session-management>
+
+		<security:csrf disabled="true" request-matcher-ref="defaultRequiresCsrfMatcher"/>
+
+		<security:custom-filter ref="filterSecurityInterceptorImpl" before="FILTER_SECURITY_INTERCEPTOR"/>
+		<security:custom-filter ref="defaultUserAuthenticationFilter" position="FORM_LOGIN_FILTER"/>
+		<security:custom-filter ref="userLogoutFilter" position="LOGOUT_FILTER"/>
+	</security:http>
+	
+	<!-- 登出 -->
+	<bean id="userLogoutFilter" class="com.vteba.security.filter.logout.UserLogoutFilter">
+		<constructor-arg index="0" ref="simpleUrlLogoutSuccessHandler"/>
+		<constructor-arg index="1">
+			<list>
+				<ref bean="securityContextCacheLogoutHandler"/>
+			</list>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="simpleUrlLogoutSuccessHandler" class="org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler">
+		<property name="defaultTargetUrl" value="/employee/login"/>
+	</bean>
+	
+	<bean id="securityContextCacheLogoutHandler" class="com.vteba.security.filter.logout.SecurityContextCacheLogoutHandler">
+		<property name="securityUserCache" ref="springSecurityUserCache"/>
+	</bean>
+	
+	<bean id="loginUrlAuthenticationEntryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+		<constructor-arg value="/employee/login"/>
+	</bean>
+
+	<bean id="defaultUserAuthenticationFilter" class="com.vteba.security.filter.DefaultUserAuthenticationFilter">
+		<property name="authenticationManager" ref="org.springframework.security.authenticationManager"/>
+		<property name="requiresAuthenticationRequestMatcher" ref="antPathRequestMatcher"/>
+		<property name="authenticationSuccessHandler" ref="successHandler"/>
+		<property name="authenticationFailureHandler" ref="failureHandler"/>
+		<property name="sessionAuthenticationStrategy" ref="sessionAuthenticationStrategy"/>
+		<property name="caseSensitive" value="true"/>
+	</bean>
+	<bean id="antPathRequestMatcher" class="org.springframework.security.web.util.matcher.AntPathRequestMatcher">
+		<constructor-arg index="0" value="/login"/>
+		<constructor-arg index="1" value="POST"/>
+	</bean>
+	<bean id="successHandler" class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler">
+		<property name="defaultTargetUrl" value="/common/platform"/>
+		<property name="alwaysUseDefaultTargetUrl" value="true"/>
+	</bean>
+	<bean id="failureHandler" class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler">
+		<property name="defaultFailureUrl" value="/employee/login?authError=true"/>
+	</bean>
+
+	<bean id="sessionRegistryImpl" class="org.springframework.security.core.session.SessionRegistryImpl"/>
+	<bean id="concurrentSessionControlAuthenticationStrategy" class="org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy">
+		<constructor-arg ref="sessionRegistryImpl"/>
+	</bean>
+    <bean id="sessionAuthenticationStrategy" class="org.springframework.security.web.authentication.session.CompositeSessionAuthenticationStrategy">
+        <constructor-arg>
+            <list>
+                <ref bean="concurrentSessionControlAuthenticationStrategy"/>
+            </list>
+        </constructor-arg>
+    </bean>
+
+	<!--访问决策管理器-->
+	<bean id="accessDecisionManagerImpl" class="com.vteba.security.manager.AccessDecisionManagerImpl"/>
+	
+	<!--安全资源源数据，将所有的资源和权限对应起来，即某一资源可以被哪些角色去访问,在这里自动注入会失败，所以使用构造函数注入-->
+	<bean id="securityMetadataSourceImpl" class="com.vteba.security.meta.FilterInvocationSecurityMetadataSourceImpl">
+		<constructor-arg ref="authorityServiceImpl" />
+		<property name="tenantSchema" value="true"/>
+		<property name="whiteListTenantIds">
+			<list>
+				<value>Default001</value>
+				<value>Default002</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="bcryptPasswordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
+		<constructor-arg value="4"/>
+	</bean>
+	
+	<bean id="daoAuthenticationProvider" class="com.vteba.security.provider.DefaultAuthenticationProvider">
+		<property name="userDetailsService" ref="userServiceImpl"/>
+		<property name="passwordEncoder" ref="bcryptPasswordEncoder"/>
+		<property name="securityUserCache" ref="springSecurityUserCache"/>
+	</bean>
+	
+	<bean id="org.springframework.security.authenticationManager" class="org.springframework.security.authentication.ProviderManager">
+		<constructor-arg>
+			<list>
+				<ref bean="daoAuthenticationProvider"/>
+			</list>
+		</constructor-arg>
+	</bean>
+	
+	<!--自定义权限验证过滤器filter，必须包含authenticationManager,accessDecisionManager,securityMetadataSource三个属性-->
+	<bean id="filterSecurityInterceptorImpl" class="com.vteba.security.interceptor.FilterSecurityInterceptorImpl">
+		<property name="authenticationManager" ref="org.springframework.security.authenticationManager"/>
+		<property name="accessDecisionManager" ref="accessDecisionManagerImpl"/>
+		<property name="securityMetadataSource" ref="securityMetadataSourceImpl"/>
+		<property name="cluster" value="true"/>
+		<property name="redirectUrl" value="/employee/login"/>
+		<property name="whiteListUrl">
+			<set>
+				<value>/common/random</value>
+				<value>/employee/clean</value>
+				<value>/employee/login</value>
+				<value>/employee/sessionTimeout</value>
+				<value>/employee/login?authError=true</value>
+				<value>/logout</value>
+				<value>/common/platform</value>
+			</set>
+		</property>
+	</bean>
+    
+    <bean id="defaultWebInvocationPrivilegeEvaluator" class="org.springframework.security.web.access.DefaultWebInvocationPrivilegeEvaluator">
+    	<constructor-arg ref="filterSecurityInterceptorImpl"/>
+    </bean>
+    
+    <bean id="defaultWebSecurityPrivilegeManager" class="com.vteba.security.manager.DefaultWebSecurityPrivilegeManager">
+    	<property name="filterSecurityInterceptorImpl" ref="filterSecurityInterceptorImpl"/>
+    	<property name="accessDecisionManagerImpl" ref="accessDecisionManagerImpl"/><!-- 这个可以拿到 -->
+    </bean>
+    
+    <bean id="springSecurityUserCache" class="com.vteba.cache.redis.SpringSecurityUserCache"/>
+</beans>
