@@ -48,8 +48,8 @@ import java.util.Set;
  * @author yinlei
  * @since 2017/11/9 17:03
  */
-@Configuration
-@EnableWebSecurity
+//@Configuration
+//@EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -63,31 +63,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .antMatchers("/*.jpg").permitAll()
-                .antMatchers("/*.png").permitAll()
-                .antMatchers("/*.jpeg").permitAll()
-                .antMatchers("/*.gif").permitAll()
-                .antMatchers("/*.bmp").permitAll()
-                .antMatchers("/*.ico").permitAll()
-                .antMatchers("/*.js").permitAll()
-                .antMatchers("/*.css").permitAll()
-                .antMatchers("/*.map").permitAll()
-                .antMatchers("/*.svg").permitAll()
-                .antMatchers("/*.ttf").permitAll()
-                .antMatchers("/*.otf").permitAll()
-                .antMatchers("/*.eot").permitAll()
-                .antMatchers("/*.woff").permitAll()
-                .antMatchers("/*.woff2").permitAll()
-                .antMatchers("/employee/login").permitAll()
-                .antMatchers("/user/login").permitAll()
-                .antMatchers("/index.jsp").permitAll()
-                .antMatchers("/user/list").permitAll()
+                .regexMatchers("\"^/[\\w\\W_\\-.]+.(jpg|jpeg|gif|png|bmp|ico|js|css|map|svg|ttf|otf|eot|woff|woff2)$\"").permitAll()
+                .antMatchers("/**/employee/login").permitAll()
+                .antMatchers("/**/user/login").permitAll()
+                .antMatchers("/**/index.jsp").permitAll()
+                .antMatchers("/**/user/list").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
                 .loginPage("/employee/login")
-//                .successHandler(loginSuccessHandler())
-//                .failureHandler(loginFailureHandler())
                 .failureForwardUrl("/employee/login")
                 .and()
                 .logout()

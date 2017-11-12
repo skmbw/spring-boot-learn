@@ -4,6 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.SecurityFilterAutoConfiguration;
 import org.springframework.boot.autoconfigure.transaction.jta.JtaAutoConfiguration;
 import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
@@ -17,7 +19,8 @@ import org.springframework.boot.web.support.SpringBootServletInitializer;
  */
 // 目前没有使用MongoDB，但是一些封装代码对MongoDB进行了封装，引入了驱动jar，这里排除掉
 // 不使用jta事务
-@SpringBootApplication(exclude = {MongoAutoConfiguration.class, MongoDataAutoConfiguration.class, JtaAutoConfiguration.class})
+@SpringBootApplication(exclude = {MongoAutoConfiguration.class, MongoDataAutoConfiguration.class, JtaAutoConfiguration.class,
+        SecurityAutoConfiguration.class, SecurityFilterAutoConfiguration.class})
 public class Application extends SpringBootServletInitializer implements EmbeddedServletContainerCustomizer {
 
     public static void main(String[] args) {
