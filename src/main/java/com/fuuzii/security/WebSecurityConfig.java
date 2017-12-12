@@ -4,7 +4,6 @@ import com.vteba.cache.redis.SpringSecurityUserCache;
 import com.vteba.security.filter.DefaultUserAuthenticationFilter;
 import com.vteba.security.filter.logout.SecurityContextCacheLogoutHandler;
 import com.vteba.security.filter.logout.UserLogoutFilter;
-import com.vteba.security.interceptor.FilterSecurityInterceptorImpl;
 import com.vteba.security.manager.AccessDecisionManagerImpl;
 import com.vteba.security.meta.FilterInvocationSecurityMetadataSourceImpl;
 import com.vteba.security.provider.DefaultAuthenticationProvider;
@@ -13,7 +12,6 @@ import com.vteba.security.spi.UserDetailsService;
 import com.vteba.security.spi.cache.SecurityUserCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -21,13 +19,11 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
@@ -40,16 +36,14 @@ import org.springframework.security.web.authentication.session.ConcurrentSession
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author yinlei
  * @since 2017/11/9 17:03
  */
-@Configuration
-@EnableWebSecurity
+//@Configuration
+//@EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -273,32 +267,32 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return invocationSecurityMetadataSource;
     }
 
-    /**
-     * Spring Security 核心拦截器
-     *
-     * @return 拦截器
-     */
-    @Bean
-    @Autowired
-    public FilterSecurityInterceptorImpl filterSecurityInterceptor(AccessDecisionManager accessDecisionManager,
-                                                                   FilterInvocationSecurityMetadataSource filterInvocationSecurityMetadataSource,
-                                                                   AuthenticationManager authenticationManager) {
-        FilterSecurityInterceptorImpl interceptor = new FilterSecurityInterceptorImpl();
-        interceptor.setAccessDecisionManager(accessDecisionManager);
-        interceptor.setSecurityMetadataSource(filterInvocationSecurityMetadataSource);
-        interceptor.setAuthenticationManager(authenticationManager);
-        interceptor.setCluster(true);
-        interceptor.setRedirectUrl("/employee/login");
-
-        Set<String> whiteList = new HashSet<>();
-        whiteList.add("/employee/login");
-        whiteList.add("/employee/login?authError=true");
-        whiteList.add("/logout");
-        whiteList.add("/common/platform");
-        whiteList.add("/user/login");
-        whiteList.add("/user/list");
-        interceptor.setWhiteListUrl(whiteList);
-
-        return interceptor;
-    }
+//    /**
+//     * Spring Security 核心拦截器
+//     *
+//     * @return 拦截器
+//     */
+//    @Bean
+//    @Autowired
+//    public FilterSecurityInterceptorImpl filterSecurityInterceptor(AccessDecisionManager accessDecisionManager,
+//                                                                   FilterInvocationSecurityMetadataSource filterInvocationSecurityMetadataSource,
+//                                                                   AuthenticationManager authenticationManager) {
+//        FilterSecurityInterceptorImpl interceptor = new FilterSecurityInterceptorImpl();
+//        interceptor.setAccessDecisionManager(accessDecisionManager);
+//        interceptor.setSecurityMetadataSource(filterInvocationSecurityMetadataSource);
+//        interceptor.setAuthenticationManager(authenticationManager);
+//        interceptor.setCluster(true);
+//        interceptor.setRedirectUrl("/employee/login");
+//
+//        Set<String> whiteList = new HashSet<>();
+//        whiteList.add("/employee/login");
+//        whiteList.add("/employee/login?authError=true");
+//        whiteList.add("/logout");
+//        whiteList.add("/common/platform");
+//        whiteList.add("/user/login");
+//        whiteList.add("/user/list");
+//        interceptor.setWhiteListUrl(whiteList);
+//
+//        return interceptor;
+//    }
 }
